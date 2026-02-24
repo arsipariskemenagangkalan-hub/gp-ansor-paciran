@@ -1,0 +1,178 @@
+/*
+=========================================
+THEME: GP Ansor Paciran
+Cara Pakai:
+1. Buat folder: wp-content/themes/gp-ansor-paciran
+2. Buat file sesuai nama di bawah ini
+3. Copy isi masing-masing bagian ke file terkait
+4. Aktifkan di Dashboard > Appearance > Themes
+=========================================
+*/
+
+/* =============================
+FILE: style.css
+============================= */
+/*
+Theme Name: GP Ansor Paciran
+Theme URI: https://gpansorpaciran.id
+Author: PR GP Ansor Paciran
+Description: Theme resmi PR GP Ansor Paciran
+Version: 1.0
+*/
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+header {
+    background: #0f5132;
+    padding: 15px;
+    color: white;
+}
+
+nav a {
+    color: white;
+    margin-right: 15px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero {
+    background: #198754;
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.section {
+    padding: 60px 20px;
+    background: white;
+    margin-bottom: 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.card {
+    background: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+footer {
+    background: #0f5132;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+button {
+    background: #ffc107;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* =============================
+FILE: functions.php
+============================= */
+<?php
+function gp_ansor_setup() {
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    register_nav_menus(array(
+        'primary' => __('Menu Utama'),
+    ));
+}
+add_action('after_setup_theme', 'gp_ansor_setup');
+?>
+
+/* =============================
+FILE: header.php
+============================= */
+<?php ?><!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+<meta charset="<?php bloginfo('charset'); ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<header>
+<div class="container">
+<h1><?php bloginfo('name'); ?></h1>
+<nav>
+<?php wp_nav_menu(array('theme_location' => 'primary')); ?>
+</nav>
+</div>
+</header>
+
+/* =============================
+FILE: footer.php
+============================= */
+<footer>
+<p>© <?php echo date('Y'); ?> PR GP Ansor Paciran</p>
+<p>Aswaja milik Kita, NKRI Harga Mati, Pancasila Jaya!</p>
+</footer>
+<?php wp_footer(); ?>
+</body>
+</html>
+
+/* =============================
+FILE: front-page.php
+============================= */
+<?php get_header(); ?>
+
+<section class="hero">
+<h2>Pimpinan Ranting GP Ansor Paciran</h2>
+<p>"Aswaja milik Kita, NKRI Harga Mati, Pancasila Jaya!"</p>
+<button>Bergabung Sekarang</button>
+</section>
+
+<section class="section">
+<div class="container">
+<h2>Tentang GP Ansor</h2>
+<p>Gerakan Pemuda Ansor (GP Ansor) didirikan pada 24 April 1934 di Banyuwangi, Jawa Timur dan merupakan badan otonom Nahdlatul Ulama.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<h2>Berita Terbaru</h2>
+<?php
+$query = new WP_Query(array('post_type' => 'post', 'posts_per_page' => 3));
+if($query->have_posts()) :
+while($query->have_posts()) : $query->the_post();
+?>
+<div class="card">
+<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+<p><?php the_time('d F Y'); ?></p>
+</div>
+<?php endwhile; endif; wp_reset_postdata(); ?>
+</div>
+</section>
+
+<?php get_footer(); ?>
+
+/* =============================
+FILE: index.php
+============================= */
+<?php get_header(); ?>
+<div class="section">
+<div class="container">
+<?php if(have_posts()) : while(have_posts()) : the_post(); ?>
+<div class="card">
+<h2><?php the_title(); ?></h2>
+<?php the_content(); ?>
+</div>
+<?php endwhile; endif; ?>
+</div>
+</div>
+<?php get_footer(); ?>
