@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR GP Ansor Paciran</title>
+
+<!-- FIREBASE v8 COMPAT -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<style>
+body{margin:0;font-family:Segoe UI,Arial;background:#f4f6f8}
+header{background:#0f5132;color:white;padding:20px;text-align:center}
+nav{background:#14532d;padding:10px;text-align:center}
+nav a{color:white;margin:0 15px;text-decoration:none;font-weight:bold;cursor:pointer}
+section{display:none;padding:40px}
+.active{display:block}
+.container{max-width:1100px;margin:auto}
+.card{background:white;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.08)}
+button{background:#d4af37;color:black;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:bold}
+button:hover{opacity:.9}
+input,textarea{width:100%;padding:10px;margin-bottom:10px;border-radius:6px;border:1px solid #ccc}
+footer{background:#0f5132;color:white;text-align:center;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.admin-only{display:none}
+img{max-width:100%;border-radius:8px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>PR GP Ansor Paciran</h1>
+<p>Ketua: Zainal Abidin</p>
+</header>
+
+<nav>
+<a onclick="show('home')">Beranda</a>
+<a onclick="show('berita')">Berita</a>
+<a onclick="show('galeri')">Galeri</a>
+<a onclick="show('struktur')">Struktur</a>
+<a onclick="show('admin')">Admin</a>
+</nav>
+
+<section id="home" class="active">
+<div class="container">
+<div class="card">
+<h2>Aswaja milik Kita, NKRI Harga Mati, Pancasila Jaya!</h2>
+</div>
+</div>
+</section>
+
+<section id="berita">
+<div class="container">
+<h2>Berita</h2>
+<div id="beritaList" class="grid"></div>
+</div>
+</section>
+
+<section id="galeri">
+<div class="container">
+<h2>Galeri</h2>
+<div id="galeriList" class="grid"></div>
+</div>
+</section>
+
+<section id="struktur">
+<div class="container">
+<div class="card">
+<h2>Struktur Pengurus</h2>
+<p><b>Ketua:</b> Zainal Abidin</p>
+<p><b>Email Admin:</b> prgpansorpaciran2021@gmail.com</p>
+</div>
+</div>
+</section>
+
+<section id="admin">
+<div class="container">
+<div id="loginBox" class="card">
+<h2>Login Admin</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<div id="dashboard" class="admin-only">
+<div class="card">
+<h3>Tambah Berita</h3>
+<input type="text" id="judul" placeholder="Judul">
+<textarea id="isi" placeholder="Isi"></textarea>
+<input type="file" id="gambar">
+<button onclick="tambahBerita()">Simpan</button>
+</div>
+
+<div class="card">
+<h3>Tambah Foto Galeri</h3>
+<input type="file" id="fotoGaleri">
+<button onclick="tambahGaleri()">Upload</button>
+</div>
+
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+</section>
+
+<footer>
+© 2024 PR GP Ansor Paciran
+</footer>
+
+<script>
+
+// GANTI DENGAN CONFIG FIREBASE
+var firebaseConfig = {
+ apiKey: "ISI_APIKEY",
+ authDomain: "ISI_AUTHDOMAIN",
+ projectId: "ISI_PROJECTID",
+ storageBucket: "ISI_STORAGE_BUCKET"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var auth = firebase.auth();
+var storage = firebase.storage();
+
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+function login(){
+var email=document.getElementById("email").value;
+var pass=document.getElementById("password").value;
+auth.signInWithEmailAndPassword(email,pass)
+.then(()=>{
+document.getElementById("loginBox").style.display="none";
+document.querySelector(".admin-only").style.display="block";
+})
+.catch(()=>alert("Login gagal"));
+}
+
+function logout(){
+auth.signOut().then(()=>location.reload());
+}
+
+function tambahBerita(){
+var file=document.getElementById("gambar").files[0];
+var judul=document.getElementById("judul").value;
+var isi=document.getElementById("isi").value;
+if(!file||!judul||!isi){alert("Lengkapi data");return}
+
+var ref=storage.ref("berita/"+Date.now()+file.name);
+ref.put(file).then(snapshot=>{
+snapshot.ref.getDownloadURL().then(url=>{
+db.collection("berita").add({judul:judul,isi:isi,gambar:url,tanggal:new Date()})
+.then(()=>{alert("Berhasil");loadBerita();});
+});
+});
+}
+
+function tambahGaleri(){
+var file=document.getElementById("fotoGaleri").files[0];
+if(!file){alert("Pilih foto");return}
+var ref=storage.ref("galeri/"+Date.now()+file.name);
+ref.put(file).then(snapshot=>{
+snapshot.ref.getDownloadURL().then(url=>{
+db.collection("galeri").add({url:url,tanggal:new Date()})
+.then(()=>{alert("Upload berhasil");loadGaleri();});
+});
+});
+}
+
+function loadBerita(){
+db.collection("berita").orderBy("tanggal","desc").onSnapshot(snapshot=>{
+var list=document.getElementById("beritaList");
+list.innerHTML="";
+snapshot.forEach(doc=>{
+var d=doc.data();
+list.innerHTML+=`<div class='card'><h3>${d.judul}</h3><img src='${d.gambar}'><p>${d.isi}</p></div>`;
+});
+});
+}
+
+function loadGaleri(){
+db.collection("galeri").orderBy("tanggal","desc").onSnapshot(snapshot=>{
+var list=document.getElementById("galeriList");
+list.innerHTML="";
+snapshot.forEach(doc=>{
+var d=doc.data();
+list.innerHTML+=`<div class='card'><img src='${d.url}'></div>`;
+});
+});
+}
+
+loadBerita();
+loadGaleri();
+
+</script>
+
+</body>
+</html>
